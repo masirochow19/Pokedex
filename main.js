@@ -15,7 +15,7 @@ function mostrarPokemon(poke) {
 
     let pokeId = poke.id.toString();
     if (pokeId.length === 1) {
-        pokeId = "00" + pokeId;
+        pokeId = "0" + pokeId;
     } else if (pokeId.length === 2) {
         pokeId = "0" + pokeId;
     }
