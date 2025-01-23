@@ -9,8 +9,11 @@ async function obtenerPokemones() {
         pokemones.push(fetch(URL + i).then((response) => response.json()));
     }
 
+    // Esperar a que todas las solicitudes se completen y ordenar los Pokémon por ID
     const resultados = await Promise.all(pokemones);
-    resultados.forEach(pokemon => mostrarPokemon(pokemon));
+    const pokemonesOrdenados = resultados.sort((a, b) => a.id - b.id);
+
+    pokemonesOrdenados.forEach(pokemon => mostrarPokemon(pokemon));
 }
 
 // Mostrar la información de un Pokémon
@@ -51,8 +54,12 @@ async function filtrarPokemonPorTipo(tipo) {
         pokemones.push(fetch(URL + i).then((response) => response.json()));
     }
 
+    // Esperar a que todas las solicitudes se completen y ordenar los Pokémon por ID
     const resultados = await Promise.all(pokemones);
-    resultados.forEach(pokemon => {
+    const pokemonesOrdenados = resultados.sort((a, b) => a.id - b.id);
+
+    // Filtrar los Pokémon por tipo o mostrar todos
+    pokemonesOrdenados.forEach(pokemon => {
         const tipos = pokemon.types.map((type) => type.type.name);
         if (tipo === "ver-todos" || tipos.includes(tipo)) {
             mostrarPokemon(pokemon);
@@ -61,7 +68,7 @@ async function filtrarPokemonPorTipo(tipo) {
 }
 
 // Evento para los botones de filtro
-botonesHeader.forEach(boton => 
+botonesHeader.forEach(boton =>
     boton.addEventListener("click", (event) => {
         const botonId = event.currentTarget.id;
         filtrarPokemonPorTipo(botonId);
