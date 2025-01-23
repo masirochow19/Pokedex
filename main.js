@@ -2,24 +2,22 @@ const listaPokemon = document.querySelector("#listaPokemon");
 const botonesHeader = document.querySelectorAll(".btn-header");
 let URL = "https://pokeapi.co/api/v2/pokemon/";
 
-for (let i = 1; i <= 151; i++) {
-    fetch(URL + i)
-        .then((response) => response.json())
-        .then(data => mostrarPokemon(data))
-}
-
-function mostrarPokemon(poke) {
-
-    let tipos = poke.types.map((type) => `<p class="${type.type.name} tipo">${type.type.name}</p>`);
-    tipos = tipos.join('');
-
-    let pokeId = poke.id.toString();
-    if (pokeId.length === 1) {
-        pokeId = "0" + pokeId;
-    } else if (pokeId.length === 2) {
-        pokeId = "0" + pokeId;
+// Obtener y mostrar todos los Pokémon en orden
+async function obtenerPokemones() {
+    const pokemones = [];
+    for (let i = 1; i <= 151; i++) {
+        pokemones.push(fetch(URL + i).then((response) => response.json()));
     }
 
+    const resultados = await Promise.all(pokemones);
+    resultados.forEach(pokemon => mostrarPokemon(pokemon));
+}
+
+// Mostrar la información de un Pokémon
+function mostrarPokemon(poke) {
+    const tipos = poke.types.map((type) => `<p class="${type.type.name} tipo">${type.type.name}</p>`).join('');
+
+    const pokeId = poke.id.toString().padStart(3, '0'); // Asegura que el ID tenga 3 dígitos.
 
     const div = document.createElement("div");
     div.classList.add("pokemon");
@@ -45,25 +43,30 @@ function mostrarPokemon(poke) {
     listaPokemon.append(div);
 }
 
-botonesHeader.forEach(boton => boton.addEventListener("click", (event) => {
-    const botonId = event.currentTarget.id;
-
-    listaPokemon.innerHTML = "";
-
+// Filtrar Pokémon por tipo
+async function filtrarPokemonPorTipo(tipo) {
+    listaPokemon.innerHTML = ""; // Limpiar la lista actual
+    const pokemones = [];
     for (let i = 1; i <= 151; i++) {
-        fetch(URL + i)
-            .then((response) => response.json())
-            .then(data => {
-
-                if(botonId === "ver-todos") {
-                    mostrarPokemon(data);
-                } else {
-                    const tipos = data.types.map(type => type.type.name);
-                    if (tipos.some(tipo => tipo.includes(botonId))) {
-                        mostrarPokemon(data);
-                    }
-                }
-
-            })
+        pokemones.push(fetch(URL + i).then((response) => response.json()));
     }
-}))
+
+    const resultados = await Promise.all(pokemones);
+    resultados.forEach(pokemon => {
+        const tipos = pokemon.types.map((type) => type.type.name);
+        if (tipo === "ver-todos" || tipos.includes(tipo)) {
+            mostrarPokemon(pokemon);
+        }
+    });
+}
+
+// Evento para los botones de filtro
+botonesHeader.forEach(boton => 
+    boton.addEventListener("click", (event) => {
+        const botonId = event.currentTarget.id;
+        filtrarPokemonPorTipo(botonId);
+    })
+);
+
+// Inicializar mostrando todos los Pokémon
+obtenerPokemones();
